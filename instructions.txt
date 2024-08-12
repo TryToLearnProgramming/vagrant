@@ -1,0 +1,25 @@
+TO SPEED UP THE PROCESS 1ST RUN -
+sudo kubeadm config images pull
+
+TO INIT, RUN -
+sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.1
+
+TO INSTALL CNI (weave) -
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+
+IF face proble while jioning worker node -
+sudo kubeadm reset
+
+sudo swapoff -a => all nodes.
+
+sudo systemctl restart kubelet
+
+sudo iptables -F
+
+sudo rm -rf /var/lib/cni/
+
+sudo systemctl restart containerd
+
+sudo systemctl daemon-reload
+
+then againg try to join... hope it will work :')
