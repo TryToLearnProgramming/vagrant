@@ -29,7 +29,9 @@ graph TB
     style Worker Node fill:#bbf,stroke:#333,stroke-width:2px
 ```
 
-![Cluster Network](https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo.png" width="50%" alt="Cluster Network">
+</p>
 
 ## Prerequisites
 
@@ -102,7 +104,9 @@ Role: Worker
 </tr>
 </table>
 
-![Cluster Diagram](https://d33wubrfki0l68.cloudfront.net/2475489eaf20163ec0f54ddc1d92aa8d4c87c96b/e7c81/images/docs/components-of-kubernetes.svg)
+<p align="center">
+  <img src="https://d33wubrfki0l68.cloudfront.net/2475489eaf20163ec0f54ddc1d92aa8d4c87c96b/e7c81/images/docs/components-of-kubernetes.svg" width="50%" alt="Kubernetes Components">
+</p>
 
 ## Quick Start
 
