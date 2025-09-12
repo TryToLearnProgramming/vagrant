@@ -1,7 +1,7 @@
 # Configuration parameters
 VAGRANT_BASE_OS = "bento/ubuntu-24.04" # "bento/ubuntu-22.04"
 PRIVATE_NETWORK = "private_network"
-BASE_CIDR = "10.148.0.0"         # Base address for pods
+BASE_CIDR = "10.201.0.0"         # Base address for pods
 CLUSTER_BASE_IP = "192.168.63.1"       # Base address for nodes
 
 # Create list of one or more Control Plane Nodes (but one is sufficient)
@@ -46,9 +46,10 @@ Vagrant.configure("2") do |config|
         done
         # Create Cluster Init Script:
         sudo echo "#!/bin/bash"                     >  cluster_init.sh
-        sudo echo "echo 'Pulling K8s Images'"       >> cluster_init.sh
+        sudo echo "echo 'Pulling k8s Images'"       >> cluster_init.sh
         sudo echo "sudo kubeadm config images pull" >> cluster_init.sh
-        sudo echo "echo '\nInitializing Cluster'"   >> cluster_init.sh
+        sudo echo "echo ''"                         >> cluster_init.sh
+        sudo echo "echo 'Initializing Cluster'"     >> cluster_init.sh
         sudo echo "sudo kubeadm init --pod-network-cidr=${BASE_CIDR}/16 --apiserver-advertise-address=${CLUSTER_BASE_IP}" >> cluster_init.sh
         sudo chmod a+rx cluster_init.sh
         # Create Weave Install Script:
