@@ -5,7 +5,7 @@
 [![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
 
-This project sets up a local Kubernetes cluster using Vagrant and VirtualBox. It creates two Ubuntu 22.04 virtual machines: one control plane node and one worker node with automatic installation of Docker, Kubernetes components, and necessary configurations.
+This project sets up a local Kubernetes cluster using Vagrant and VirtualBox. It creates two Ubuntu 24.04 virtual machines: one control plane node and one worker node with automatic installation of Docker, Kubernetes components, and necessary configurations.
 
 ## Architecture
 
@@ -45,7 +45,7 @@ graph TB
 <table>
 <tr>
     <td align="center">🔄</td>
-    <td>Automated VM provisioning with Ubuntu 22.04</td>
+    <td>Automated VM provisioning with Ubuntu 24.04</td>
 </tr>
 <tr>
     <td align="center">🌐</td>
