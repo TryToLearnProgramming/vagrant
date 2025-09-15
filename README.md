@@ -71,7 +71,7 @@ graph TB
 
 ## 🖥 Cluster Configuration
 
-> **Note about IP Addressing**: This configuration uses `192.168.63.1` and `192.168.63.2` for the control plane and worker nodes respectively. You can modify these IPs in the `Vagrantfile` to use any IP addresses from your router's IP range that are outside the DHCP scope. Make sure to choose IPs that won't conflict with other devices on your network.
+> **Note about IP Addressing**: This configuration uses `192.168.63.11` and `192.168.63.12` for the control plane and worker nodes respectively. You can modify these IPs in the `Vagrantfile` to use any IP addresses from your router's IP range that are outside the DHCP scope. Make sure to choose IPs that won't conflict with other devices on your network.
 
 <table>
 <tr>
@@ -82,7 +82,7 @@ graph TB
 <td>
 
 ```yaml
-IP: 192.168.63.1
+IP: 192.168.63.11
 Hostname: cplane
 Memory: 2048MB
 CPUs: 2
@@ -93,7 +93,7 @@ Role: Control Plane
 <td>
 
 ```yaml
-IP: 192.168.63.2
+IP: 192.168.63.12
 Hostname: worker
 Memory: 2048MB
 CPUs: 2
@@ -110,7 +110,7 @@ Role: Worker
 
 ## Quick Start
 
-> **💡 Tip**: Before starting, you may want to adjust the IP addresses in the `Vagrantfile` if the default IPs (`192.168.63.1, 192.168.63.2`) conflict with your network setup. Edit the `private_network` IP settings in the Vagrantfile to match your network requirements.
+> **💡 Tip**: Before starting, you may want to adjust the IP addresses in the `Vagrantfile` if the default IPs (`192.168.63.11, 192.168.63.12`) conflict with your network setup. Edit the `private_network` IP settings in the Vagrantfile to match your network requirements.
 
 1. Clone this repository:
 ```bash
@@ -177,7 +177,7 @@ sudo kubeadm config images pull
 
 Initialize the cluster:
 ```bash
-sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.1
+sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.11
 ```
 
 ### 2. Install CNI (Container Network Interface)
