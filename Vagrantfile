@@ -24,6 +24,7 @@ Vagrant.configure("2") do |config|
     config.vm.define node[:name] do |cplane|
       cplane.vm.box = node[:box]
       cplane.vm.network node[:network], ip: node[:ip]
+      cplane.vm.network "forwarded_port", guest: 443, host: 8443 # Port Forward for k8s dashboard
       cplane.vm.hostname = node[:name]
       cplane.vm.provider "virtualbox" do |v|
         v.name = node[:name]
@@ -94,6 +95,13 @@ Vagrant.configure("2") do |config|
 
         # apt-transport-https may be a dummy package; if so, you can skip that package
         sudo apt install -y apt-transport-https ca-certificates curl gpg
+        # Helm Deployment Manager
+        curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/helm.gpg] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+        sudo apt update
+        sudo apt install -y helm
+
+        # Containerd
         curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
         echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
         sudo apt update
