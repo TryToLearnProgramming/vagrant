@@ -1,12 +1,11 @@
 # Configuration parameters
 VAGRANT_BASE_OS = "bento/ubuntu-24.04" # "bento/ubuntu-22.04"
-PRIVATE_NETWORK = "private_network"
-BASE_CIDR = "10.201.0.0"         # Base address for pods
-CLUSTER_BASE_IP = "192.168.63.1"       # Base address for nodes
+PRIVATE_NETWORK = "private_network"    # For Host -> VM and VM <-> VM within the network
+BASE_CIDR       = "10.201.0.0"         # Base address for pods
 
 # Create list of one or more Control Plane Nodes (but one is sufficient)
 CPLANE_NODES = [
-  { name: "cplane",    box: VAGRANT_BASE_OS, network: PRIVATE_NETWORK, ip: "192.168.63.11" }
+  { name: "cplane",  box: VAGRANT_BASE_OS, network: PRIVATE_NETWORK, ip: "192.168.63.11" }
 ]
 
 # Create list of one or more worker nodes
@@ -33,9 +32,9 @@ Vagrant.configure("2") do |config|
       end
       cplane.vm.provision "shell",
         env: {
-          "ETC_HOSTS"       => ETC_HOSTS,
-          "BASE_CIDR"       => BASE_CIDR,
-          "CLUSTER_BASE_IP" => CLUSTER_BASE_IP
+          "ETC_HOSTS"     => ETC_HOSTS,
+          "BASE_CIDR"     => BASE_CIDR,
+          "API_SERVER_IP" => node[:ip] # API Server is the control plane host itself
         },
         inline: <<-SHELL
         # Add Nodes to /etc/hosts
@@ -45,13 +44,13 @@ Vagrant.configure("2") do |config|
           sudo echo ${hline} >> /etc/hosts
         done
         # Create Cluster Init Script:
-        sudo echo "#!/bin/bash"                     >  cluster_init.sh
-        sudo echo "echo 'Pulling k8s Images'"       >> cluster_init.sh
-        sudo echo "sudo kubeadm config images pull" >> cluster_init.sh
-        sudo echo "echo ''"                         >> cluster_init.sh
-        sudo echo "echo 'Initializing Cluster'"     >> cluster_init.sh
-        sudo echo "sudo kubeadm init --pod-network-cidr=${BASE_CIDR}/16 --apiserver-advertise-address=${CLUSTER_BASE_IP}" >> cluster_init.sh
-        sudo chmod a+rx cluster_init.sh
+        echo "#!/bin/bash"                     >  cluster_init.sh
+        echo "echo 'Pulling k8s Images'"       >> cluster_init.sh
+        echo "sudo kubeadm config images pull" >> cluster_init.sh
+        echo "echo ''"                         >> cluster_init.sh
+        echo "echo 'Initializing Cluster'"     >> cluster_init.sh
+        echo "sudo kubeadm init --pod-network-cidr=${BASE_CIDR}/16 --apiserver-advertise-address=${API_SERVER_IP}" >> cluster_init.sh
+        chmod a+rx cluster_init.sh
         # Create Weave Install Script:
         sudo echo "#!/bin/bash"           >  weave_install.sh
         sudo echo "echo 'Install Weave'"  >> weave_install.sh
