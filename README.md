@@ -195,14 +195,9 @@ For ease of use, a single script `cluster_init.sh` was created as a function of 
 * local copy of "kube config"
 * Weave CNI install
 
-First, log into the control plane node:
+and can be run with the vagrant command:
 ```bash
-vagrant ssh cplane
-```
-
-Run the Cluster Init Script:
-```bash
-./cluster_init.sh
+vagrant ssh cplane -c "./cluster_init.sh"
 ```
 
 ### 3. Join Worker Node
