@@ -1,6 +1,6 @@
 # Configuration parameters
 VAGRANT_BASE_OS = "bento/ubuntu-24.04" # "bento/ubuntu-22.04"
-PRIVATE_NETWORK = "private_network"    # For Host -> VM and VM <-> VM within the network
+PRIVATE_NETWORK = "private_network"    # For Host -> VM and VM <-> VM (within the network)
 BASE_CIDR       = "10.201.0.0"         # Base address for pods
 
 # Create list of one or more Control Plane Nodes (but one is sufficient)
