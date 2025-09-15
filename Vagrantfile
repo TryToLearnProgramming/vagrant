@@ -43,19 +43,34 @@ Vagrant.configure("2") do |config|
         echo -e "${ETC_HOSTS}" | while read -r hline; do
           sudo echo ${hline} >> /etc/hosts
         done
+
         # Create Cluster Init Script:
-        echo "#!/bin/bash"                     >  cluster_init.sh
-        echo "echo 'Pulling k8s Images'"       >> cluster_init.sh
-        echo "sudo kubeadm config images pull" >> cluster_init.sh
-        echo "echo ''"                         >> cluster_init.sh
-        echo "echo 'Initializing Cluster'"     >> cluster_init.sh
+        echo "#!/bin/bash"                                                     >  cluster_init.sh
+        echo "echo 'Pulling k8s Images'"                                       >> cluster_init.sh
+        echo "sudo kubeadm config images pull"                                 >> cluster_init.sh
+        echo "echo ''"                                                         >> cluster_init.sh
+        echo "echo 'Initializing Cluster'"                                     >> cluster_init.sh
         echo "sudo kubeadm init --pod-network-cidr=${BASE_CIDR}/16 --apiserver-advertise-address=${API_SERVER_IP}" >> cluster_init.sh
+        echo "if [ -f /etc/kubernetes/admin.conf ] ; then"                     >> cluster_init.sh
+        echo "  echo ''"                                                       >> cluster_init.sh
+        echo "  echo 'Create local .kube/config'"                              >> cluster_init.sh
+        echo "  mkdir -p \\\${HOME}/.kube"                                     >> cluster_init.sh
+        echo "  sudo cp -i /etc/kubernetes/admin.conf \\\${HOME}/.kube/config" >> cluster_init.sh
+        echo "  sudo chown \\\$(id -u):\\\$(id -g) \\\${HOME}/.kube/config"    >> cluster_init.sh
+        echo "  echo ''"                                                       >> cluster_init.sh
+        echo "  echo 'Install Weave'"                                          >> cluster_init.sh
+        echo "  kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml" >> cluster_init.sh
+        echo "fi"                                                              >> cluster_init.sh
         chmod a+rx cluster_init.sh
-        # Create Weave Install Script:
-        sudo echo "#!/bin/bash"           >  weave_install.sh
-        sudo echo "echo 'Install Weave'"  >> weave_install.sh
-        sudo echo "kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml" >> weave_install.sh
-        sudo chmod a+rx weave_install.sh
+
+        # Show the k8s join command:
+        echo "#!/bin/bash"                                     >  join_cmd.sh
+        echo "echo 'k8s worker join command (may need sudo):'" >> join_cmd.sh
+        echo "echo ''"                                         >> join_cmd.sh
+        echo "kubeadm token create --print-join-command"       >> join_cmd.sh
+        echo "echo ''"                                         >> join_cmd.sh
+        sudo chmod a+rx join_cmd.sh
+
         # Apt Stuff:
         sudo apt update
         sudo apt install ca-certificates curl
@@ -76,6 +91,7 @@ Vagrant.configure("2") do |config|
         sudo apt update && sudo apt install -y apt-transport-https
         curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
         sudo apt update
+
         # apt-transport-https may be a dummy package; if so, you can skip that package
         sudo apt install -y apt-transport-https ca-certificates curl gpg
         curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
