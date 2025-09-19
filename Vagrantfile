@@ -32,10 +32,7 @@ Vagrant.configure("2") do |config|
       end
       cplane.vm.provision "file", source: "scripts/", destination: "."
       cplane.vm.provision "shell",
-        env: {
-          "ETC_HOSTS"     => ETC_HOSTS,
-          "API_SERVER_IP" => node[:ip] # API Server is the control plane host itself
-        },
+        env: { "ETC_HOSTS" => ETC_HOSTS },
         inline: <<-SHELL
         # Add Nodes to /etc/hosts
         sudo echo "# Added by Vagrant" >> /etc/hosts
