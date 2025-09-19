@@ -1,26 +1,21 @@
-TO SPEED UP THE PROCESS 1ST RUN in the master NODE-
+TO SPEED UP THE PROCESS 1ST RUN in the master NODE:
 - sudo kubeadm config images pull
 
-TO INIT, RUN  in the master NODE-
-- sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.1
+TO INIT, RUN  in the master NODE:
+- sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.11
 - you wull get a kubeadm join command run that in you master node after Install the CNI
 
-TO INSTALL CNI (weave) -
-- kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+TO INSTALL CNI (weave):
+- sudo kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
-IF face proble while jioning worker node, reatart master node and run below commands-
-sudo kubeadm reset
+If you face problems while joining a worker node, reatart master node and run below commands:
+- sudo kubeadm reset
+- sudo swapoff -a => all nodes.
+- sudo systemctl restart kubelet
+- sudo iptables -F
+- sudo rm -rf /var/lib/cni/
+- sudo systemctl restart containerd
+- sudo systemctl daemon-reload
 
-sudo swapoff -a => all nodes.
+then try again to join... I hope it will work :')
 
-sudo systemctl restart kubelet
-
-sudo iptables -F
-
-sudo rm -rf /var/lib/cni/
-
-sudo systemctl restart containerd
-
-sudo systemctl daemon-reload
-
-then againg try to join... hope it will work :')
