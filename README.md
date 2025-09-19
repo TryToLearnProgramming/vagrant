@@ -60,6 +60,11 @@ graph TB
     <td>Ready-to-use Kubernetes cluster setup</td>
 </tr>
 <tr>
+    <td align="center">📜</td>
+    <td>Easy-to-use Bash Scripts for Kubernetes cluster setup - reduce typing errors</td>
+</tr>
+
+<tr>
     <td align="center">🔒</td>
     <td>Secure communication between nodes</td>
 </tr>
@@ -180,7 +185,7 @@ Initialize the cluster:
 sudo kubeadm init --pod-network-cidr=10.201.0.0/16 --apiserver-advertise-address=192.168.63.11
 ```
 
-### 2. Install CNI (Container Network Interface)
+### 2. Install Weave CNI (Container Network Interface)
 
 After the cluster initialization, install Weave CNI:
 ```bash
@@ -228,6 +233,40 @@ worker   Ready    <none>          2m14s   v1.30.x
 ```
 
 > **Note**: The nodes may show `NotReady` status initially as the CNI (Container Network Interface) is being configured. Please wait a few minutes for the status to change to `Ready`.
+
+### 5. (Optional) Set Role for Worker Node(s)
+
+As the output above shows, there is no inital role set for worker nodes.  You can set their role to "worker" with:
+
+The Kubernetes Dashboard is Web UI that allows you to manage your cluster; configure and manage aspects of the system, troubleshoot, and to have an overview of applications running on your cluster
+
+```bash
+vagrant ssh cplane -c "./set_worker_role.sh"
+```
+
+This script can be run any time a new node is added.
+
+### 6. (Optional) Kubernetes Dashboard Installation
+
+The Kubernetes Dashboard is Web UI that allows you to manage your cluster; configure and manage aspects of the system, troubleshoot, and to have an overview of applications running on your cluster
+
+First, log into the control plane node:
+```bash
+vagrant ssh cplane
+```
+
+Execute the Dashboard setup script:
+```bash
+./kub_dashboard.sh <option>
+```
+
+Where `<option>` is one of:
+* worker - to deploy dashboard on any worker node
+* cplane - to deploy dashboard on the control plane
+* token  - to show the dashboard credentials token (and the dashboard url)
+
+Normally, the Kubernetes Dashboard would be deployed to one of the worker nodes.  This would always be the case in a production
+Kubernetes cluster.  However for a small development cluster, it doesn't hurt to run the dashboard on the control plane
 
 ### Troubleshooting
 
