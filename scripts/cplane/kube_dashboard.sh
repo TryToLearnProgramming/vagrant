@@ -7,6 +7,7 @@ CPLANE_IP=$(echo $(hostname -i | sed -E 's/127\.0\.[0-9]+\.[0-9]+//g'))
 NAMESPACE="kubernetes-dashboard"
 SERVICE="kubernetes-dashboard"
 DASHBOARD_PORT=32443
+DASHBOARD_SESSION_TIMEOUT=3600 # (60 x 60 Seconds; 1 hour)
 
 function help_msg {
     echo ""
@@ -118,6 +119,79 @@ EOF
 }
 
 
+# Specific the specific port for the Dashboard
+# NodePort will otherwise choose a random port
+function dashboard_port_forward {
+    echo "⚙️  Setting up dashboard access via NodePort, port ${DASHBOARD_PORT}"
+    kubectl -n ${NAMESPACE} patch svc ${SERVICE} --type='json' -p="[
+        {\"op\":\"replace\",\"path\":\"/spec/type\",\"value\":\"NodePort\"},
+        {\"op\":\"replace\",\"path\":\"/spec/ports/0/nodePort\",\"value\":$((DASHBOARD_PORT))}
+    ]"
+
+    if [ ${?} -eq 0 ]; then
+        echo "✅ Dashboard is now exposed at: https://${CPLANE_IP}:${DASHBOARD_PORT}/"
+    else
+        echo "❌ Failed to patch the Service"
+        exit 1
+    fi
+
+    echo "🔍 New Assigned NodePort:"
+    kubectl -n ${NAMESPACE} get svc ${SERVICE}
+}
+
+
+# Adjust the session timeout (which is quite short)
+function dashboard_session_timeout {
+    echo "⚙️  Adjusting Kubernetes Dashboard session timeout (${DASHBOARD_SESSION_TIMEOUT} seconds)"
+
+    kubectl -n ${NAMESPACE} patch deployment ${SERVICE} --type='json' -p="[
+       {\"op\":\"add\",\"path\":\"/spec/template/spec/containers/0/args/-\",\"value\":\"--token-ttl=${DASHBOARD_SESSION_TIMEOUT}\"}
+    ]"
+
+    if  [ $? -eq 0 ]; then
+        echo "✅ Patch Applied"
+    else
+        echo "❌ Failed to patch the Deployment"
+        exit 1
+    fi
+}
+
+# Verify Kubernetes Dashboard available
+function verify_kube_dashboard {
+    # Verify that CNI service is running
+    timeout=60 # 2 minutes = 120 seconds
+    interval=10 # check every 10 seconds
+    elapsed=0
+
+    # Repeat loop until time runs out
+    while [ ${elapsed} -lt ${timeout} ]; do
+        echo -n "🔍 Verify Kubernetes Dashboard running"
+        if [ ${elapsed} -gt 0 ]; then
+            echo " (trying for $((timeout - elapsed)) more seconds)"
+        else
+            echo ""
+        fi
+
+        # If the dashboard is running correctly then it will report back the pods list
+	dashboard_state=$(kubectl get pods -n ${NAMESPACE} -o json 2>/dev/null | jq -r '.items[] | select(.metadata.name | match("kubernetes-dashboard-[0-9a-f]{10}-[0-9a-f]")) | .status.phase')
+
+        elapsed=$((elapsed + interval))
+        if [ "${dashboard_state}" == "Running" ]; then
+            break
+        elif [ ${elapsed} -lt ${timeout} ]; then
+            sleep ${interval}
+        fi
+    done
+
+    if [ ${dashboard_state} == "Running" ]; then
+        echo "✅ Kubernetes Dashboard is running"
+    else
+        echo "❌ Timed out during check - Kubernetes Dashboard is NOT running"
+        exit 1
+    fi
+}
+
+
 # Retrieve and display the dashboard credentials
 # And the url for login
 function dashboard_user_token {
@@ -128,41 +202,6 @@ function dashboard_user_token {
     echo "--------------------------------------------------"
     echo "Dashboard is at: https://${CPLANE_IP}:${DASHBOARD_PORT}"
     echo ""
-}
-
-
-# Specific the specific port for the Dashboard
-# NodePort will otherwise choose a random port
-function dashboard_port_forward {
-    echo "⚙️  Setting up dashboard access via NodePort"
-    kubectl -n ${NAMESPACE} patch svc ${SERVICE} -p '{"spec": {"type": "NodePort"}}'
-
-    echo "🔍 Check Assigned NodePort:"
-    kubectl -n ${NAMESPACE} get svc ${SERVICE}
-
-    echo "⚙️  Patching service '${SERVICE}' to use nodePort=${DASHBOARD_PORT}..."
-    kubectl -n "${NAMESPACE}" patch svc "${SERVICE}" --type='json' -p="[
-        {
-            \"op\": \"replace\",
-            \"path\": \"/spec/ports/0/nodePort\",
-            \"value\": $((DASHBOARD_PORT))
-        },
-        {
-            \"op\": \"replace\",
-            \"path\": \"/spec/type\",
-            \"value\": \"NodePort\"
-        }
-    ]"
-
-    if [ $? -eq 0 ]; then
-        echo "✅ Dashboard is now exposed at: https://${CPLANE_IP}:${DASHBOARD_PORT}/"
-    else
-        echo "❌ Failed to patch the Service"
-        exit 1
-    fi
-
-    echo "🔍 New Assigned NodePort:"
-    kubectl -n ${NAMESPACE} get svc ${SERVICE}
 }
 
 
@@ -179,7 +218,6 @@ if ! [[ ${param_str} = @(worker|cplane|token) ]]; then
 fi
 
 if [[ ${param_str} = @(worker|cplane) ]]; then
-    echo "string found"
     helm_sanity_check
     helm_dashboard_install
     dashboard_sanity_check
@@ -191,6 +229,8 @@ if [[ ${param_str} = @(worker|cplane) ]]; then
 
     dashboard_user_create
     dashboard_port_forward
+    dashboard_session_timeout
+    verify_kube_dashboard
 fi
 
 # Always show the user token
