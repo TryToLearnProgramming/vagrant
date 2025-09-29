@@ -173,12 +173,13 @@ function verify_kube_dashboard {
         fi
 
         # If the dashboard is running correctly then it will report back the pods list
-	dashboard_state=$(kubectl get pods -n ${NAMESPACE} -o json 2>/dev/null | jq -r '.items[] | select(.metadata.name | match("kubernetes-dashboard-[0-9a-f]{10}-[0-9a-f]")) | .status.phase')
+        dashboard_state=$(kubectl get pods -n ${NAMESPACE} -o json 2>/dev/null | jq -r '.items[] | select(.metadata.name | match("kubernetes-dashboard-[0-9a-z]{10}-[0-9a-z]{5}")) | .status.phase')
 
         elapsed=$((elapsed + interval))
         if [ "${dashboard_state}" == "Running" ]; then
             break
         elif [ ${elapsed} -lt ${timeout} ]; then
+            echo "⏳ Current State: '${dashboard_state}', sleep and retry"
             sleep ${interval}
         fi
     done
