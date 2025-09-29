@@ -266,6 +266,7 @@ function verify_flannel_cni {
         if [ ${flannel_state} == "Running" ]; then
             break
         elif [ ${elapsed} -lt ${timeout} ]; then
+            echo "⏳ Current State: '${flannel_state}', sleep and retry"
             sleep ${interval}
         fi
     done
